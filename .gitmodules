@@ -26,3 +26,7 @@
 	path = target/a53x/patches/vendor
 	url = https://github.com/Ksawlii/unica_target_a53x_patches_vendor.git
 	ignore = dirty
+[submodule "target/m34x/patches/vendor"]
+	path = target/m34x/patches/vendor
+	url = https://github.com/kurtbahartr/unica_target_m34x_patches_vendor.git
+	ignore = dirty
