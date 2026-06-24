@@ -1,0 +1,216 @@
+diff -ruN --exclude=Cargo.lock --exclude=target --exclude=.git --exclude=.cargo --exclude=.github --exclude=LICENSE --exclude=README.md --exclude=CONTRIBUTING.md --exclude=.gitignore ./fus/src/fusclient.rs /tmp/samloader-patched/fus/src/fusclient.rs
+--- ./fus/src/fusclient.rs	2026-05-30 12:56:01
++++ /tmp/samloader-patched/fus/src/fusclient.rs	2026-05-30 12:56:27
+@@ -73,6 +73,39 @@
+         self.info = BinaryInform::parse(&xml).expect("Info request invalid");
+     }
+ 
++    pub fn fetch_binary_info_for_version(&mut self, model: &str, region: &str, version: &str) {
++        let mut parts: Vec<&str> = version.split('/').collect();
++        if parts.len() == 3 {
++            parts.push(parts[0]);
++        }
++        let fw = parts.join("/");
++        let req_xml = xml::binary_inform_req_xml(model, region, &fw, &self.nonce);
++
++        let xml = self
++            .make_req("NF_SmartDownloadBinaryInform.do", &req_xml)
++            .and_then(Response::text)
++            .expect("Info request failed");
++
++        self.info = BinaryInform::parse(&xml).expect("Info request invalid");
++    }
++
++    pub fn fetch_all_versions(&self, model: &str, region: &str) -> Vec<String> {
++        let version_url = format!(
++            "https://fota-cloud-dn.ospserver.net:443/firmware/{}/{}/version.xml",
++            region, model
++        );
++        let version_xml = self
++            .client
++            .get(&version_url)
++            .header(USER_AGENT, "Kies2.0_FUS")
++            .send()
++            .expect("Failed to fetch version.xml")
++            .text()
++            .expect("Failed to read version.xml text");
++
++        xml::parse_version_xml_all(&version_xml)
++    }
++
+     fn make_headers(&self) -> HeaderMap {
+         let auth_val = format!(
+             "FUS nonce=\"{}\", signature=\"{}\", nc=\"\", type=\"\", realm=\"\", newauth=\"1\"",
+diff -ruN --exclude=Cargo.lock --exclude=target --exclude=.git --exclude=.cargo --exclude=.github --exclude=LICENSE --exclude=README.md --exclude=CONTRIBUTING.md --exclude=.gitignore ./fus/src/xml.rs /tmp/samloader-patched/fus/src/xml.rs
+--- ./fus/src/xml.rs	2026-05-30 12:56:01
++++ /tmp/samloader-patched/fus/src/xml.rs	2026-05-30 12:56:32
+@@ -45,6 +45,54 @@
+     Some(parts.join("/"))
+ }
+ 
++pub(crate) fn parse_version_xml_all(xml: &str) -> Vec<String> {
++    let doc = Document::parse(xml).ok();
++    if doc.is_none() {
++        return Vec::new();
++    }
++    let doc = doc.unwrap();
++
++    let mut versions: Vec<String> = Vec::new();
++
++    for value_node in doc.descendants().filter(|n| n.has_tag_name("value")) {
++        if let Some(text) = value_node.text() {
++            let trimmed = text.trim();
++            if !trimmed.is_empty() {
++                let mut parts: Vec<&str> = trimmed.split("/").collect();
++                if parts.len() == 3 {
++                    parts.push(parts[0]);
++                }
++                if parts.len() >= 3 && parts[2].is_empty() {
++                    parts[2] = parts[0];
++                }
++                versions.push(parts.join("/"));
++            }
++        }
++    }
++
++    if let Some(latest) = doc.descendants()
++        .find(|n| n.has_tag_name("latest"))
++        .and_then(|n| n.text())
++    {
++        let trimmed = latest.trim();
++        if !trimmed.is_empty() {
++            let mut parts: Vec<&str> = trimmed.split("/").collect();
++            if parts.len() == 3 {
++                parts.push(parts[0]);
++            }
++            if parts.len() >= 3 && parts[2].is_empty() {
++                parts[2] = parts[0];
++            }
++            versions.push(parts.join("/"));
++        }
++    }
++
++    let mut seen = std::collections::HashSet::new();
++    versions.retain(|v| seen.insert(v.clone()));
++
++    versions
++}
++
+ pub(crate) fn binary_inform_req_xml(model: &str, region: &str, fw: &str, nonce: &str) -> String {
+     let logic_check = get_logic_check(fw, nonce);
+ 
+diff -ruN --exclude=Cargo.lock --exclude=target --exclude=.git --exclude=.cargo --exclude=.github --exclude=LICENSE --exclude=README.md --exclude=CONTRIBUTING.md --exclude=.gitignore ./samloader/src/download.rs /tmp/samloader-patched/samloader/src/download.rs
+--- ./samloader/src/download.rs	2026-05-30 12:56:01
++++ /tmp/samloader-patched/samloader/src/download.rs	2026-05-30 12:56:39
+@@ -32,6 +32,9 @@
+     /// Region CSC code (e.g. XAA)
+     pub(crate) region: String,
+ 
++    /// Optional: firmware version. If None, downloads the latest.
++    pub(crate) version: Option<String>,
++
+     /// Number of parallel connections
+     pub(crate) threads: u64,
+ 
+@@ -44,7 +47,15 @@
+ 
+ pub(crate) fn download_latest_firmware(args: DownloadArgs) {
+     let mut client = FusClient::new().expect("Unable to establish FusClient");
+-    client.fetch_binary_info(&args.model, &args.region);
++
++    match &args.version {
++        Some(version) => {
++            client.fetch_binary_info_for_version(&args.model, &args.region, version);
++        }
++        None => {
++            client.fetch_binary_info(&args.model, &args.region);
++        }
++    }
+ 
+     println!("Firmware Version: {}", client.info.version);
+ 
+diff -ruN --exclude=Cargo.lock --exclude=target --exclude=.git --exclude=.cargo --exclude=.github --exclude=LICENSE --exclude=README.md --exclude=CONTRIBUTING.md --exclude=.gitignore ./samloader/src/main.rs /tmp/samloader-patched/samloader/src/main.rs
+--- ./samloader/src/main.rs	2026-05-30 12:56:01
++++ /tmp/samloader-patched/samloader/src/main.rs	2026-05-30 12:56:58
+@@ -26,7 +26,7 @@
+         .arg_required_else_help(true)
+         .subcommand(
+             Command::new("download")
+-                .about("Download the latest firmware")
++                .about("Download firmware")
+                 .arg(
+                     Arg::new("model")
+                         .short('m')
+@@ -42,6 +42,12 @@
+                         .help("Region CSC code (e.g. XAA)"),
+                 )
+                 .arg(
++                    Arg::new("version")
++                        .short('v')
++                        .long("version")
++                        .help("Firmware version string (e.g. PDA/CSC/MODEM). If omitted, downloads the latest."),
++                )
++                .arg(
+                     Arg::new("threads")
+                         .short('j')
+                         .long("threads")
+@@ -64,7 +70,7 @@
+         )
+         .subcommand(
+             Command::new("check-update")
+-                .about("Check the latest version")
++                .about("Check available versions")
+                 .arg(
+                     Arg::new("model")
+                         .short('m')
+@@ -78,6 +84,13 @@
+                         .long("region")
+                         .required(true)
+                         .help("Region CSC code (e.g. XAA)"),
++                )
++                .arg(
++                    Arg::new("all")
++                        .short('a')
++                        .long("all")
++                        .help("List all available firmware versions")
++                        .action(clap::ArgAction::SetTrue),
+                 ),
+         )
+         .get_matches();
+@@ -86,12 +99,14 @@
+         Some(("download", sub_m)) => {
+             let model = sub_m.get_one::<String>("model").cloned().unwrap();
+             let region = sub_m.get_one::<String>("region").cloned().unwrap();
++            let version = sub_m.get_one::<String>("version").cloned();
+             let threads = *sub_m.get_one::<u64>("threads").unwrap();
+             let out_dir = sub_m.get_one::<String>("out_dir").cloned();
+             let out_file = sub_m.get_one::<String>("out_file").cloned();
+             let args = DownloadArgs {
+                 model,
+                 region,
++                version,
+                 threads,
+                 out_dir,
+                 out_file,
+@@ -101,9 +116,19 @@
+         Some(("check-update", sub_m)) => {
+             let model = sub_m.get_one::<String>("model").cloned().unwrap();
+             let region = sub_m.get_one::<String>("region").cloned().unwrap();
++            let show_all = sub_m.get_one::<bool>("all").copied().unwrap_or(false);
++
+             let mut client = FusClient::new().expect("Unable to establish FusClient");
+-            client.fetch_binary_info(&model, &region);
+-            println!("{}", client.info.version);
++
++            if show_all {
++                let versions = client.fetch_all_versions(&model, &region);
++                for v in &versions {
++                    println!("{}", v);
++                }
++            } else {
++                client.fetch_binary_info(&model, &region);
++                println!("{}", client.info.version);
++            }
+         }
+         _ => unreachable!(),
+     };
