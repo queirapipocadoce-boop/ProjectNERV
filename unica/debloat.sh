@@ -71,6 +71,7 @@ app/YouTube
 overlay/GmsConfigOverlaySearchSelector.apk
 priv-app/Messages
 priv-app/SearchSelector
+priv-app/Velvet
 "
 
 SYSTEM_DEBLOAT+="
@@ -100,7 +101,6 @@ system/etc/permissions/privapp-permissions-com.microsoft.skydrive.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.authfw.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.carkey.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.cidmanager.xml
-system/etc/permissions/privapp-permissions-com.sec.android.app.dexonpc.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.dkey.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.providers.factory.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.samsungpass.xml
@@ -127,7 +127,6 @@ system/priv-app/AuthFramework
 system/priv-app/BCService
 system/priv-app/CIDManager
 system/priv-app/DeviceKeystring
-system/priv-app/DeXonPC
 system/priv-app/DiagMonAgent94
 system/priv-app/DigitalKey
 system/priv-app/FBInstaller_NS
