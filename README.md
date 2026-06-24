@@ -1,13 +1,6 @@
 <h1 align="center">
   <img loading="lazy" src="readme-res/banner.png"/>
 </h1>
-<p align="center">
-  <a href="https://github.com/yagzie/NERV/blob/paradigm/LICENSE"><img loading="lazy" src="https://img.shields.io/github/license/yagzie/NERV?style=for-the-badge&logo=github"/></a>
-  <a href="https://github.com/yagzie/NERV/commits/paradigm"><img loading="lazy" src="https://img.shields.io/github/last-commit/yagzie/NERV/paradigm?style=for-the-badge"/></a>
-  <a href="https://github.com/yagzie/NERV/stargazers"><img loading="lazy" src="https://img.shields.io/github/stars/yagzie/NERV?style=for-the-badge"/></a>
-  <a href="https://github.com/yagzie/NERV/graphs/contributors"><img loading="lazy" src="https://img.shields.io/github/contributors/yagzie/NERV?style=for-the-badge"/></a>
-  <a href="https://github.com/yagzie/NERV/actions/workflows/build.yml"><img loading="lazy" src="https://img.shields.io/github/actions/workflow/status/yagzie/NERV/build.yml?style=for-the-badge"/></a>
-</p>
 <p align="center">UN1CA <i>(/ˈu.ni.ka/)</i> is a work-in-progress custom firmware for Samsung Galaxy devices.</p>
 
 <p align="center">
@@ -16,6 +9,14 @@
 
 <p align="center">
   <a href="https://t.me/SE_NERV">💬 NERV Telegram</a>
+</p>
+
+<p align="center">
+  <a href="https://t.me/a14stuffs">💬 A14 Stuffs Telegram</a>
+</p>
+
+<p align="center">
+  <a href="https://t.me/a14stuffschat">💬 Support Group</a>
 </p>
 
 # What is UN1CA?
@@ -27,19 +28,16 @@ Any form of contribution, suggestions, bug report or feature request for the pro
 # What is NERV?
 NERV is a fork of UN1CA; to make the build system work with One UI 7, we are aiming for an UN1CA-like experience with what we can do. All changes have been made under GPLv3, if you see any problems about credits at repo, please kindly report to me at Telegram, XDA or email. 
 
+# What is goal of this fork?
+This forks goal is making ProjectNerv work on Galaxy A14, everything else is based on original ProjectNERV repo.
+
 # Features
-- Based on the latest Samsung devices firmware:
-  - Galaxy S23 (Paradigm)
-  - Galaxy S23 FE (Paradigm)
-  - Galaxy A73 5G (Fun)
+- Based on the Galaxy S23FE S711BXXSAEYI1 version
 - Galaxy AI support
 - App Lock Support
 - High end animations
-- Screenshots from Secure Apps support
-- ASKS disabled 
-- APK Downgrade support
-- Native/live blur support (Paradigm)
-- Adaptive refresh rate support (Paradigm)
+- Screenshots from Secure Apps support (not tested yet)
+- APK Downgrade support (not tested yet)
 - Extra brightness support
 - Picture remaster support
 - Object, shadow and reflection eraser support
@@ -47,10 +45,10 @@ NERV is a fork of UN1CA; to make the build system work with One UI 7, we are aim
 - Smart Suggestions widget
 - Samsung Now Brief support
 - Multi user support
-- Samsung DeX support (Paradigm)
+- Samsung DeX support
+- SmartManagerCN
 - Camera privacy toggle support
 - Debloated from useless system services/additional apps
-- [BluetoothLibraryPatcher](https://github.com/3arthur6/BluetoothLibraryPatcher) included
 - [KnoxPatch](https://github.com/salvogiangri/KnoxPatch) implemented in system frameworks
 
 # Licensing
@@ -62,7 +60,18 @@ This project is licensed under the terms of the [GNU General Public License v3.0
 - [platform_build](https://android.googlesource.com/platform/build/) (ext4_utils, f2fs_utils, signapk), licensed under the [Apache License 2.0](https://source.android.com/docs/setup/about/licenses)
 - [smali](https://github.com/google/smali), [multiple licenses](https://github.com/google/smali/blob/main/third_party/NOTICE)
 
-# Credits
+# Fork Credits
+- **[kurtbahartr](https://github.com/kurtbahartr)** original ProjectNERV repo on github
+- **[yagzie](https://github.com/yagzie)** original ProjectNERV owner
+- **[salvogiangri](https://github.com/salvogiangri)** for his original UN1CA tree, rom patches and mods
+- **[ExtremeXT](https://github.com/ExtremeXT)** for his BootAnim & Bootlogo mod on ExtremeROM & all other things i forgot
+- **[BasGame1](https://github.com/BasGame1)** for his A21s target tree on ExtremeROM
+- **[saadelasfur](https://github.com/saadelasfur)** for his SmartManagerCN recovery flashable zip repo
+- **[A21s ExtremeROM repo](https://github.com/BasGame1/ExtremeROM_A21s)**
+- PM me on [Telegram](https://t.me/miss_yutani) if i forgot anything
+- This fork doesnt have any big difference from the original ProjectNERV repo, this fork's goal is building it for Galaxy A14
+
+# ProjectNERV Credits
 A big thanks goes to the following for their invaluable contributions in no particular order:
 - **[ShaDisNX255](https://github.com/ShaDisNX255)** for his help, time and for his [NcX ROM](https://github.com/ShaDisNX255/NcX_Stock) which inspired this project
 - **[DavidArsene](https://github.com/DavidArsene)** for his help and time
@@ -74,6 +83,3 @@ A big thanks goes to the following for their invaluable contributions in no part
 - **[Bobert10](https://t.me/bobert10)** for the NERV banner
 - **[All Kangers]** for making me laugh with your rebranded repos with no difference
 - *All the UN1CA project contributors and testers ❤️*
-
-# Stargazers over time
-[![Stargazers over time](https://starchart.cc/yagzie/NERV.svg)](https://starchart.cc/yagzie/NERV)
