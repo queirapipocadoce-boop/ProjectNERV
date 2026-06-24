@@ -27,3 +27,5 @@ unica/mods/rezetprop/system/bin/rezetprop binary
 target/*/patches/*/system/** binary
 target/*/patches/*/product/** binary
 target/*/patches/*/vendor/** binary
+target/r8s/patches/vendor/vendor/** binary
+*.capex binary
