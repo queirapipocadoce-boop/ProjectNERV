@@ -122,8 +122,8 @@ GET_LATEST_FIRMWARE()
 
 # PARSE_FIRMWARE_STRING <string>
 # Parses the supplied string and stores each value in MODEL/CSC/IMEI/SERIAL_NO variables.
-# - The supplied string must be in the following format: <MODEL>/<CSC>/<IMEI/SN>
-# - IMEI/SN that matches the given model is required to download the firmware from FUS
+# - The supplied string must be in the following format: <MODEL>/<CSC>[/<IMEI/SN>]
+# - IMEI/SN is optional (not required by samloader-rs)
 PARSE_FIRMWARE_STRING()
 {
     local STRING="$1"
@@ -151,12 +151,10 @@ PARSE_FIRMWARE_STRING()
     local THIRD
     THIRD="$(cut -d "/" -f 3 -s <<< "$STRING")"
     if [ ! "$THIRD" ]; then
-        LOGE "No IMEI/SN value found in \"$STRING\""
-        return 1
+        return 0
     elif [[ "${#THIRD}" == "11" ]] && [[ "$THIRD" == "R"* ]]; then
         SERIAL_NO="$THIRD"
     elif [[ "${#THIRD}" -ge "8" ]] && [[ "${#THIRD}" -le "15" ]] && [[ "$THIRD" =~ ^[+-]?[0-9]+$ ]]; then
-        # Allow uncomplete IMEIs as samloader can generate them by providing the first 8 numbers (TAC)
         IMEI="$THIRD"
     else
         LOGE "No valid IMEI/SN in \"$STRING\": $THIRD"

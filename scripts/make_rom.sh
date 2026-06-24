@@ -123,6 +123,12 @@ if $BUILD_ROM; then
         "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/patches" || exit 1
         LOG_STEP_OUT
     fi
+    
+    if [ -d "$SRC_DIR/platform/$TARGET_PLATFORM/patches" ]; then
+        LOG_STEP_IN true "Applying platform patches"
+        "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/platform/$TARGET_PLATFORM/patches" || exit 1
+        LOG_STEP_OUT
+    fi
     if [ -d "$SRC_DIR/target/$TARGET_CODENAME/patches" ]; then
         LOG_STEP_IN true "Applying device patches"
         "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/target/$TARGET_CODENAME/patches" || exit 1
@@ -132,6 +138,12 @@ if $BUILD_ROM; then
     if [ -d "$SRC_DIR/unica/mods" ]; then
         LOG_STEP_IN true "Applying ROM mods"
         "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/mods" || exit 1
+        LOG_STEP_OUT
+    fi
+
+    if [ -d "$SRC_DIR/target/$TARGET_CODENAME/late_patches" ]; then
+        LOG_STEP_IN true "Applying late patches"
+        "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/target/$TARGET_CODENAME/late_patches" || exit 1
         LOG_STEP_OUT
     fi
 

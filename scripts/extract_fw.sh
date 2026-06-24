@@ -28,6 +28,22 @@ LATEST_FIRMWARE=""
 DOWNLOADED_FIRMWARE=""
 BL_TAR=""
 AP_TAR=""
+CSC_TAR=""
+FIRMWARE_VERSION=""
+
+GET_FIRMWARE_VERSION()
+{
+    local ENTRY="$1"
+    if [ "$ENTRY" = "$SOURCE_FIRMWARE" ] && [ -n "$SOURCE_FIRMWARE_VERSION" ]; then
+        echo "$SOURCE_FIRMWARE_VERSION"
+        return
+    fi
+    if [ "$ENTRY" = "$TARGET_FIRMWARE" ] && [ -n "$TARGET_FIRMWARE_VERSION" ]; then
+        echo "$TARGET_FIRMWARE_VERSION"
+        return
+    fi
+    echo ""
+}
 
 TMP_DIR="$(mktemp -d)"
 
@@ -363,13 +379,20 @@ PREPARE_SCRIPT "$@"
 for i in "${FIRMWARES[@]}"; do
     PARSE_FIRMWARE_STRING "$i" || exit 1
 
-    LATEST_FIRMWARE="$(GET_LATEST_FIRMWARE "$MODEL" "$CSC")"
-    if [ ! "$LATEST_FIRMWARE" ]; then
-        LOGE "Latest available firmware could not be fetched"
-        exit 1
+    FIRMWARE_VERSION="$(GET_FIRMWARE_VERSION "$i")"
+
+    if [ -n "$FIRMWARE_VERSION" ]; then
+        LATEST_FIRMWARE="$FIRMWARE_VERSION"
+        LOG_STEP_IN "- Processing $MODEL firmware with $CSC CSC (version pinned: $FIRMWARE_VERSION)"
+    else
+        LATEST_FIRMWARE="$(GET_LATEST_FIRMWARE "$MODEL" "$CSC")"
+        if [ ! "$LATEST_FIRMWARE" ]; then
+            LOGE "Latest available firmware could not be fetched"
+            exit 1
+        fi
+        LOG_STEP_IN "- Processing $MODEL firmware with $CSC CSC"
     fi
 
-    LOG_STEP_IN "- Processing $MODEL firmware with $CSC CSC"
     LOG "- Downloaded firmware: $(cat "$ODIN_DIR/${MODEL}_${CSC}/.downloaded" 2> /dev/null)"
     LOG "- Extracted firmware: $(cat "$FW_DIR/${MODEL}_${CSC}/.extracted" 2> /dev/null)"
     LOG "- Latest available firmware: $LATEST_FIRMWARE"
@@ -377,21 +400,12 @@ for i in "${FIRMWARES[@]}"; do
     LOG_STEP_IN
 
     if ! $FORCE; then
-        # Skip if firmware has been extracted
         if [ -f "$FW_DIR/${MODEL}_${CSC}/.extracted" ]; then
-            if ! COMPARE_SEC_BUILD_VERSION "$(cat "$FW_DIR/${MODEL}_${CSC}/.extracted")" "$LATEST_FIRMWARE"; then
-                if [ -f "$ODIN_DIR/${MODEL}_${CSC}/.downloaded" ] && \
-                        ! COMPARE_SEC_BUILD_VERSION "$(cat "$FW_DIR/${MODEL}_${CSC}/.extracted")" "$(cat "$ODIN_DIR/${MODEL}_${CSC}/.downloaded")"; then
-                    LOG "\033[0;33m! A newer firmware has been downloaded, use --force flag if you want to overwrite it\033[0m"
-                else
-                    LOG "\033[0;33m! A newer firmware is available for download\033[0m"
-                fi
-            else
+            if [ "$(cat "$FW_DIR/${MODEL}_${CSC}/.extracted")" = "$LATEST_FIRMWARE" ]; then
                 LOG "\033[0;33m! This firmware has already been extracted\033[0m"
+                LOG_STEP_OUT; LOG_STEP_OUT
+                continue
             fi
-
-            LOG_STEP_OUT; LOG_STEP_OUT
-            continue
         fi
     fi
 

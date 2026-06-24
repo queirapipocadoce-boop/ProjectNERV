@@ -18,7 +18,8 @@
 
 # [
 source "$SRC_DIR/scripts/utils/firmware_utils.sh" || exit 1
-source "$TOOLS_DIR/venv/bin/activate" || exit 1
+SAMLOADER="samloader"
+[ -f "$SRC_DIR/tools/samloader/bin/samloader" ] && SAMLOADER="$SRC_DIR/tools/samloader/bin/samloader"
 
 FORCE=false
 
@@ -29,6 +30,41 @@ IMEI=""
 SERIAL_NO=""
 LATEST_FIRMWARE=""
 ZIP_FILE=""
+FIRMWARE_VERSION=""
+
+# Determine which version override to use based on ignore flags
+GET_FIRMWARE_VERSION()
+{
+    local ENTRY="$1"
+    local ENTRY_MODEL
+    local ENTRY_CSC
+
+    ENTRY_MODEL="$(cut -d "/" -f 1 -s <<< "$ENTRY")"
+    ENTRY_CSC="$(cut -d "/" -f 2 -s <<< "$ENTRY")"
+
+    # Match against SOURCE_FIRMWARE
+    if [ "$ENTRY" = "$SOURCE_FIRMWARE" ] && [ -n "$SOURCE_FIRMWARE_VERSION" ]; then
+        echo "$SOURCE_FIRMWARE_VERSION"
+        return
+    fi
+
+    # Match against TARGET_FIRMWARE
+    if [ "$ENTRY" = "$TARGET_FIRMWARE" ] && [ -n "$TARGET_FIRMWARE_VERSION" ]; then
+        echo "$TARGET_FIRMWARE_VERSION"
+        return
+    fi
+
+    # Check SOURCE_EXTRA_FIRMWARES
+    local EXTRA
+    IFS=':' read -r -a EXTRA_SOURCE <<< "${SOURCE_EXTRA_FIRMWARES:-}"
+    for EXTRA in "${EXTRA_SOURCE[@]}"; do
+        if [ "$ENTRY" = "$EXTRA" ]; then
+            return
+        fi
+    done
+
+    echo ""
+}
 
 PREPARE_SCRIPT()
 {
@@ -127,13 +163,20 @@ PREPARE_SCRIPT "$@"
 for i in "${FIRMWARES[@]}"; do
     PARSE_FIRMWARE_STRING "$i" || exit 1
 
-    LATEST_FIRMWARE="$(GET_LATEST_FIRMWARE "$MODEL" "$CSC")"
-    if [ ! "$LATEST_FIRMWARE" ]; then
-        LOGE "Latest available firmware could not be fetched"
-        exit 1
+    FIRMWARE_VERSION="$(GET_FIRMWARE_VERSION "$i")"
+
+    if [ -n "$FIRMWARE_VERSION" ]; then
+        LATEST_FIRMWARE="$FIRMWARE_VERSION"
+        LOG_STEP_IN "- Processing $MODEL firmware with $CSC CSC (version pinned: $FIRMWARE_VERSION)"
+    else
+        LATEST_FIRMWARE="$(GET_LATEST_FIRMWARE "$MODEL" "$CSC")"
+        if [ ! "$LATEST_FIRMWARE" ]; then
+            LOGE "Latest available firmware could not be fetched"
+            exit 1
+        fi
+        LOG_STEP_IN "- Processing $MODEL firmware with $CSC CSC"
     fi
 
-    LOG_STEP_IN "- Processing $MODEL firmware with $CSC CSC"
     LOG "- Downloaded firmware: $(cat "$ODIN_DIR/${MODEL}_${CSC}/.downloaded" 2> /dev/null)"
     LOG "- Extracted firmware: $(cat "$FW_DIR/${MODEL}_${CSC}/.extracted" 2> /dev/null)"
     LOG "- Latest available firmware: $LATEST_FIRMWARE"
@@ -141,24 +184,20 @@ for i in "${FIRMWARES[@]}"; do
     LOG_STEP_IN
 
     if ! $FORCE; then
-        # Skip if firmware has been extracted and equal/newer than the one in FUS
         if [ -f "$FW_DIR/${MODEL}_${CSC}/.extracted" ]; then
-            if COMPARE_SEC_BUILD_VERSION "$(cat "$FW_DIR/${MODEL}_${CSC}/.extracted")" "$LATEST_FIRMWARE"; then
+            if [ "$(cat "$FW_DIR/${MODEL}_${CSC}/.extracted")" = "$LATEST_FIRMWARE" ]; then
                 LOG "\033[0;33m! This firmware has already been extracted, skipping\033[0m"
                 LOG_STEP_OUT; LOG_STEP_OUT
                 continue
             fi
         fi
 
-        # Skip if firmware has already been downloaded
         if [ -f "$ODIN_DIR/${MODEL}_${CSC}/.downloaded" ]; then
-            if ! COMPARE_SEC_BUILD_VERSION "$(cat "$ODIN_DIR/${MODEL}_${CSC}/.downloaded")" "$LATEST_FIRMWARE"; then
-                LOG "\033[0;33m! A newer firmware is available for download, use --force flag if you want to overwrite it\033[0m"
-            else
+            if [ "$(cat "$ODIN_DIR/${MODEL}_${CSC}/.downloaded")" = "$LATEST_FIRMWARE" ]; then
                 LOG "\033[0;33m! This firmware has already been downloaded\033[0m"
+                LOG_STEP_OUT; LOG_STEP_OUT
+                continue
             fi
-            LOG_STEP_OUT; LOG_STEP_OUT
-            continue
         fi
     fi
 
@@ -167,25 +206,32 @@ for i in "${FIRMWARES[@]}"; do
     mkdir -p "$ODIN_DIR/${MODEL}_${CSC}"
 
     COUNT=1
-    # Loop infinetely until download succeeds
+    THREADS=8
     while true; do
-        # shellcheck disable=SC2164
-        # Anan's samloader stores its logs in the current working directory, let's move into OUT_DIR just for this time
-        (
-        cd "$OUT_DIR"
-        samloader -m "$MODEL" -r "$CSC" -i "$IMEI" -s "$SERIAL_NO" download -O "$ODIN_DIR/${MODEL}_${CSC}" 1> /dev/null || exit 1
-        )
+        if [ -n "$FIRMWARE_VERSION" ]; then
+            $SAMLOADER download -m "$MODEL" -r "$CSC" -v "$FIRMWARE_VERSION" -j "$THREADS" -d "$ODIN_DIR/${MODEL}_${CSC}" 2>&1
+        else
+            $SAMLOADER download -m "$MODEL" -r "$CSC" -j "$THREADS" -d "$ODIN_DIR/${MODEL}_${CSC}" 2>&1
+        fi
+        RET=$?
 
-        ZIP_FILE="$(find "$ODIN_DIR/${MODEL}_${CSC}" -name "*.zip" | sort -r | head -n 1)"
-        if [ ! "$ZIP_FILE" ] || [ ! -f "$ZIP_FILE" ]; then
-            if [ $COUNT -gt 10 ]; then
-                LOGW "\033[0;31m! Download failed, check your network connection or device IMEI!\033[0m"
+        ZIP_FILE="$(find "$ODIN_DIR/${MODEL}_${CSC}" -maxdepth 1 -name "*.zip" | sort -r | head -n 1)"
+
+        if [ $RET -ne 0 ] || [ ! "$ZIP_FILE" ] || [ ! -f "$ZIP_FILE" ]; then
+            if [ $COUNT -gt 5 ]; then
+                LOGW "\033[0;31m! Download failed after 5 attempts!\033[0m"
                 exit 1
             fi
 
-            LOGW "\033[0;31m! [Attempt: $COUNT] Download failed, retrying in 5 seconds...\033[0m"
-            sleep 5
+            if [ "$THREADS" -gt 1 ]; then
+                THREADS=$(( THREADS / 2 ))
+            fi
+
+            LOGW "\033[0;31m! [Attempt: $COUNT] Download failed, retrying with $THREADS threads in 10 seconds...\033[0m"
+            sleep 10
             ((COUNT++))
+            rm -rf "$ODIN_DIR/${MODEL}_${CSC}"
+            mkdir -p "$ODIN_DIR/${MODEL}_${CSC}"
         else
             break
         fi
@@ -200,7 +246,5 @@ for i in "${FIRMWARES[@]}"; do
 
     LOG_STEP_OUT; LOG_STEP_OUT
 done
-
-deactivate
 
 exit 0

@@ -19,6 +19,9 @@
 # [
 source "$SRC_DIR/scripts/utils/build_utils.sh" || exit 1
 
+SOURCE_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$SOURCE_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$SOURCE_FIRMWARE")"
+TARGET_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$TARGET_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$TARGET_FIRMWARE")"
+
 SOURCE_FINGERPRINT="$(GET_PROP "$WORK_DIR/system/system/build.prop" "ro.system.build.fingerprint")"
 SOURCE_FINGERPRINT="${SOURCE_FINGERPRINT//$(GET_PROP "$FW_DIR/$SOURCE_FIRMWARE_PATH/system/system/build.prop" "ro.build.product")/$(GET_PROP "$FW_DIR/$SOURCE_FIRMWARE_PATH/vendor/build.prop" "ro.product.vendor.device")}"
 TARGET_FINGERPRINT="$(GET_PROP "$WORK_DIR/vendor/build.prop" "ro.vendor.build.fingerprint")"
@@ -116,10 +119,13 @@ CREATE_ROM_ZIP()
     sed -i "s.$TMP_DIR/..g" "$STORED_LIST" \
         && sed -i "s.$TMP_DIR/..g" "$COMPRESSED_LIST"
 
+    local ZIP_COMPRESSION=9
+    $DEBUG && ZIP_COMPRESSION=1
+    
     (
     cd "$TMP_DIR" || exit 1
     EVAL "7z a -tzip -mx=0 -mmt=$(nproc) \"$TMP_DIR/rom.zip\" @\"$STORED_LIST\"" || exit 1
-    EVAL "7z a -tzip -mx=9 -mmt=$(nproc) \"$TMP_DIR/rom.zip\" @\"$COMPRESSED_LIST\"" || exit 1
+    EVAL "7z a -tzip -mx=$ZIP_COMPRESSION -mmt=$(nproc) \"$TMP_DIR/rom.zip\" @\"$COMPRESSED_LIST\"" || exit 1
     )
 
     rm -f "$STORED_LIST" "$COMPRESSED_LIST"
@@ -234,8 +240,12 @@ GENERATE_OP_LIST()
         fi
     } > "$OP_LIST_FILE"
 
+    LOG "Partition sizes: system=$PARTITION_SIZE $( $HAS_VENDOR && echo "vendor=$(GET_IMAGE_SIZE "$TMP_DIR/vendor.img")" ) $( $HAS_PRODUCT && echo "product=$(GET_IMAGE_SIZE "$TMP_DIR/product.img")" ) $( $HAS_SYSTEM_EXT && echo "system_ext=$(GET_IMAGE_SIZE "$TMP_DIR/system_ext.img")" ) $( $HAS_ODM && echo "odm=$(GET_IMAGE_SIZE "$TMP_DIR/odm.img")" ) total=$OCCUPIED_SPACE limit=$TARGET_SUPER_GROUP_SIZE"
+
     if [[ "$OCCUPIED_SPACE" -gt "$TARGET_SUPER_GROUP_SIZE" ]]; then
         LOGE "OS size ($OCCUPIED_SPACE) is bigger than the target group size ($TARGET_SUPER_GROUP_SIZE)"
+        LOGW "Largest files in work dir:"
+        find "$WORK_DIR" -type f -exec du -b {} + 2>/dev/null | sort -rn | head -n 60 | awk '{size=$1; $1=""; name=substr($0,2); if (size>=1073741824) printf "  %.2f GiB %s\n", size/1073741824, name; else if (size>=1048576) printf "  %.2f MiB %s\n", size/1048576, name; else if (size>=1024) printf "  %.2f KiB %s\n", size/1024, name; else printf "  %d B %s\n", size, name}' >&2
         exit 1
     fi
 }
@@ -290,6 +300,7 @@ GENERATE_UPDATER_SCRIPT()
     local SCRIPT_FILE="$TMP_DIR/META-INF/com/google/android/updater-script"
 
     local PARTITION_COUNT=0
+    local HAS_UP_PARAM=false
     local HAS_BOOT=false
     local HAS_DTBO=false
     local HAS_INIT_BOOT=false
@@ -305,6 +316,7 @@ GENERATE_UPDATER_SCRIPT()
     local HAS_SYSTEM_DLKM=false
     local HAS_POST_INSTALL=false
 
+    [ -f "$TMP_DIR/up_param.bin" ] && HAS_UP_PARAM=true
     [ -f "$TMP_DIR/boot.img" ] && HAS_BOOT=true
     [ -f "$TMP_DIR/dtbo.img" ] && HAS_DTBO=true
     [ -f "$TMP_DIR/init_boot.img" ] && HAS_INIT_BOOT=true
@@ -450,6 +462,12 @@ GENERATE_UPDATER_SCRIPT()
             echo -n "$TARGET_BOOT_DEVICE_PATH"
             echo    '/boot");'
         fi
+        if $HAS_UP_PARAM; then
+            echo    'ui_print("Installing up_param image...");'
+            echo -n 'package_extract_file("up_param.bin", "'
+            echo -n "$TARGET_BOOT_DEVICE_PATH"
+            echo    '/up_param");'
+        fi
 
         if $HAS_POST_INSTALL; then
             cat "$SRC_DIR/target/$TARGET_CODENAME/postinstall.edify"
@@ -592,6 +610,11 @@ if [ -d "$WORK_DIR/kernel" ]; then
 
         LOG_STEP_OUT
     done < <(find "$WORK_DIR/kernel" -maxdepth 1 -type f -name "*.img")
+fi
+
+if [ -f "$WORK_DIR/up_param.bin" ]; then
+    LOG "- Copying up_param.bin"
+    cp -fa "$WORK_DIR/up_param.bin" "$TMP_DIR/up_param.bin"
 fi
 
 LOG "- Generating updater-script"
