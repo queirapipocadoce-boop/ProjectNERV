@@ -13,3 +13,6 @@ security/platform.pk8
 
 # Windows Zone Identifier files
 *:*Zone.Identifier
+Dockerfile.build
+.DS_Store
+/.agents
