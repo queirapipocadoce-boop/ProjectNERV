@@ -63,7 +63,7 @@ SET_PROP "system" "dalvik.vm.heaptargetutilization" "0.75"
 LOG "-Force native compilation during Boot Animation"
 SET_PROP "system" "pm.dexopt.first-boot" "speed-profile"
 SET_PROP "system" "pm.dexopt.boot" "speed-profile"
-SET_PROP "system" "pm.dexopt.shared" "speed-profile"
+SET_PROP "system" "pm.dexopt.shared" "speed"
 SET_PROP "system" "pm.dexopt.bg-dexopt" "speed-profile"
 
 LOG "-Disable Thermal Throttling, SDHMS, and Knox via Props"
