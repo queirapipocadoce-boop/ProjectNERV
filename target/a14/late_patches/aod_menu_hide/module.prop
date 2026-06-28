@@ -1,0 +1,6 @@
+id=aod_menu_hide
+name=Hide AOD menu from Settings
+version=1.0
+versionCode=1
+author=cLangsdorff
+description=Patches LockUtils.isSupportAodService() in SecSettings to always return false, hiding the AOD section from Settings UI.
