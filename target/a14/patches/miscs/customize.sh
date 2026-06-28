@@ -38,6 +38,12 @@ LOG "-Disable DymLock (Dynamic Lockscreen plugin system) to prevent 11s SystemUI
 SET_PROP "system" "ro.lockscreen.dls_enabled" "false"
 SET_PROP "system" "persist.sys.dls_enabled" "0"
 
+LOG "-Force GSM-only telephony to prevent CDMA init ANR on SM-A145F/TUR (GSM-only device)"
+SET_PROP "system" "ro.telephony.default_network" "9"
+
+LOG "-Enable AOD always-on doze mode"
+SET_PROP "system" "ro.doze.always_on" "true"
+
 LOG "-Advanced UI/HWUI Caching and Rendering Optimizations"
 SET_PROP "system" "ro.hwui.texture_cache_size" "72"
 SET_PROP "system" "ro.hwui.layer_cache_size" "48"
