@@ -18,3 +18,5 @@ Dockerfile.build
 /.agents
 CLAUDE.md
 Handoff_ProjectNERV.md
+A14_PATCH_STRUCTURE.md
+KERNEL_SECMM_PLAN.md
