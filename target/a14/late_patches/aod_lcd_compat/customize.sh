@@ -388,7 +388,7 @@ fi
 LOG "-Enable AOD always-on doze mode"
 SET_PROP "system" "ro.doze.always_on" "true"
 
-Log "-Setting Floating Feature configs for AOD"
+LOG "-Setting Floating Feature configs for AOD"
 SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_FRAMEWORK_CONFIG_AOD_ITEM" "aodversion=7,clocktransition,aod_lcd_panel"
 SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_LCD_SUPPORT_AOD" "TRUE"
 SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_LCD_SUPPORT_DOZE_AP_SLEEP" "TRUE"
