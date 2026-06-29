@@ -76,6 +76,17 @@ system/app/WifiAiService
 system/priv-app/SVCAgent
 system/etc/permissions/privapp-permissions-com.samsung.android.svcagent.xml
 system/app/DAAgent
+system/priv-app/AREmoji
+system/etc/permissions/privapp-permissions-com.samsung.android.aremoji.xml
+system/etc/permissions/com.samsung.feature.aremoji_v2.xml
+system/etc/default-permissions/default-permissions-com.samsung.android.aremoji.xml
+system/priv-app/AREmojiEditor
+system/etc/permissions/privapp-permissions-com.samsung.android.aremojieditor.xml
+system/priv-app/AvatarEmojiSticker
+system/priv-app/AvatarPicker
+system/priv-app/StickerFaceARAvatar
+system/priv-app/AutoDoodle
+system/etc/permissions/privapp-permissions-com.sec.android.mimage.autodoodle.service.xml
 "
 
 # Wi-Fi Hotspot Overlays
