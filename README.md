@@ -32,10 +32,10 @@ NERV is a fork of UN1CA; to make the build system work with One UI 7, we are aim
 This forks goal is making ProjectNerv work on Galaxy A14, everything else is based on original ProjectNERV repo.
 
 # Features
-- Based on the Galaxy S23FE S711BXXSAEYI1 version
 - Galaxy AI support
 - App Lock Support
 - High end animations
+- LiveBlur disabled
 - Screenshots from Secure Apps support (not tested yet)
 - APK Downgrade support (not tested yet)
 - Extra brightness support
@@ -47,9 +47,18 @@ This forks goal is making ProjectNerv work on Galaxy A14, everything else is bas
 - Multi user support
 - Samsung DeX support
 - SmartManagerCN
+- SmartView support
 - Camera privacy toggle support
 - Debloated from useless system services/additional apps
-- [KnoxPatch](https://github.com/salvogiangri/KnoxPatch) implemented in system frameworks
+- KnoxPatch (https://github.com/salvogiangri/KnoxPatch) implemented in system frameworks
+- Based on S711BXXSAEYI1 version
+# Bugs
+- Nothing.
+- Report any other in @a14stuffschat
+# Notes
+- Keyboard & UI can be laggy sometimes
+- Use another keyboard app if you are writing fast in keyboard
+- ROM is more useable than a14revive@3.2, according to user responds i will release it on XDA too. Give feedbacks about yours experience in ROM
 
 # Licensing
 This project is licensed under the terms of the [GNU General Public License v3.0](LICENSE). External dependencies might be distributed under a different license, such as:
