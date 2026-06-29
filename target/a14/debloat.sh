@@ -66,6 +66,16 @@ system/priv-app/RubinVersion36
 system/etc/default-permissions/default-permissions-com.samsung.android.rubin.app.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.rubin.app.xml
 system/etc/permissions/signature-permissions-com.samsung.android.rubin.app.xml
+system/priv-app/Fmm
+system/etc/permissions/privapp-permissions-com.samsung.android.fmm.xml
+system/priv-app/SohService
+system/priv-app/MFContents
+system/etc/permissions/privapp-permissions-com.samsung.mfcontents.xml
+system/etc/default-permissions/default-permissions-com.samsung.mfcontents.xml
+system/app/WifiAiService
+system/priv-app/SVCAgent
+system/etc/permissions/privapp-permissions-com.samsung.android.svcagent.xml
+system/app/DAAgent
 "
 
 # Wi-Fi Hotspot Overlays
