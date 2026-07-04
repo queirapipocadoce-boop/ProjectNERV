@@ -1,13 +1,3 @@
-LOG "-Replacing HWUI rendering libs"
-DELETE_FROM_WORK_DIR "system" "system/lib/libhwui.so"
-DELETE_FROM_WORK_DIR "system" "system/lib64/libhwui.so"
-DELETE_FROM_WORK_DIR "system" "system/lib/libdng_sdk.so"
-DELETE_FROM_WORK_DIR "system" "system/lib64/libdng_sdk.so"
-ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib/libhwui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib64/libhwui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib/libdng_sdk.so" 0 0 644 "u:object_r:system_lib_file:s0"
-ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib64/libdng_sdk.so" 0 0 644 "u:object_r:system_lib_file:s0"
-
 LOG "-Replacing Binder libs"
 DELETE_FROM_WORK_DIR "system" "system/lib/libbinder.so"
 DELETE_FROM_WORK_DIR "system" "system/lib64/libbinder.so"
@@ -35,10 +25,6 @@ EVAL "sed -i '/com.google.android.setupwizard/d' \"$WORK_DIR/product/etc/sysconf
 LOG "-Replacing Bluetooth APEX"
 DELETE_FROM_WORK_DIR "system" "system/apex/com.android.btservices.apex"
 ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/apex/com.android.btservices.apex" 0 0 644 "u:object_r:system_file:s0"
-
-LOG "-Replacing HoneyBoard"
-DELETE_FROM_WORK_DIR "system" "system/app/HoneyBoard"
-ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/app/HoneyBoard" 0 0 755 "u:object_r:system_file:s0"
 
 LOG "-Replacing Routines with native A14 stock version"
 DELETE_FROM_WORK_DIR "system" "system/priv-app/Routines"
