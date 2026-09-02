@@ -159,6 +159,57 @@ jobs:
           source ./buildenv.sh ${{ matrix.target }}
           ./scripts/build_dependencies.sh
 
+      - name: Restore source firmware extraction cache
+        id: cache-source-fw
+        uses: actions/cache/restore@v5
+        with:
+          path: out/fw/SM-S911B_EUX
+          key: source-fw-${{ matrix.target }}-${{ hashFiles('unica/configs/qssi.sh') }}
+
+      - name: Restore source firmware marker
+        if: steps.cache-source-fw.outputs.cache-hit == 'true'
+        run: |
+          source ./buildenv.sh ${{ matrix.target }}
+          mkdir -p "$ODIN_DIR/SM-S911B_EUX"
+          echo "cached" > "$ODIN_DIR/SM-S911B_EUX/.downloaded"
+
+      - name: Download S23 One UI 7 source firmware
+        if: steps.cache-source-fw.outputs.cache-hit != 'true'
+        run: |
+          source ./buildenv.sh ${{ matrix.target }}
+          mkdir -p "$ODIN_DIR/SM-S911B_EUX"
+          THREADS=8
+          for i in 1 2 3 4 5; do
+            rm -rf "$ODIN_DIR/SM-S911B_EUX" && mkdir -p "$ODIN_DIR/SM-S911B_EUX"
+            FW_VERSION=$(samloader check-update -m "SM-S911B" -r "EUX" | tail -n 1)
+            test -n "$FW_VERSION" || { echo "samloader-rs returned no S23 firmware version"; exit 1; }
+            echo "Using S23 source firmware: $FW_VERSION"
+            samloader download -m "SM-S911B" -r "EUX" -v "$FW_VERSION" -j "$THREADS" -d "$ODIN_DIR/SM-S911B_EUX" && break
+            echo "Attempt $i failed, retrying with $THREADS threads..."
+            [ "$THREADS" -gt 1 ] && THREADS=$(( THREADS / 2 ))
+            sleep 10
+          done
+          ZIP_FILE=$(find "$ODIN_DIR/SM-S911B_EUX" -maxdepth 1 -name "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "S23 source firmware download failed after 5 attempts"
+            exit 1
+          fi
+          unzip -o "$ZIP_FILE" -d "$ODIN_DIR/SM-S911B_EUX" && rm -f "$ZIP_FILE"
+          echo "$FW_VERSION" > "$ODIN_DIR/SM-S911B_EUX/.downloaded"
+
+      - name: Extract S23 source firmware
+        if: steps.cache-source-fw.outputs.cache-hit != 'true'
+        run: |
+          source ./buildenv.sh ${{ matrix.target }}
+          ./scripts/extract_fw.sh --ignore-target
+
+      - name: Save source firmware extraction cache
+        if: steps.cache-source-fw.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: out/fw/SM-S911B_EUX
+          key: source-fw-${{ matrix.target }}-${{ hashFiles('unica/configs/qssi.sh') }}
+
       - name: Restore target firmware extraction cache
         id: cache-target-fw
         uses: actions/cache/restore@v5
@@ -166,14 +217,14 @@ jobs:
           path: out/fw/SM-A528B_BTU
           key: target-fw-${{ matrix.target }}-${{ hashFiles('target/a52sxq/config.sh') }}
 
-      - name: Restore target firmware download marker
+      - name: Restore target firmware marker
         if: steps.cache-target-fw.outputs.cache-hit == 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
           mkdir -p "$ODIN_DIR/SM-A528B_BTU"
           echo "cached" > "$ODIN_DIR/SM-A528B_BTU/.downloaded"
 
-      - name: Download same A52s firmware
+      - name: Download A52s target firmware
         if: steps.cache-target-fw.outputs.cache-hit != 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
@@ -182,8 +233,8 @@ jobs:
           for i in 1 2 3 4 5; do
             rm -rf "$ODIN_DIR/SM-A528B_BTU" && mkdir -p "$ODIN_DIR/SM-A528B_BTU"
             FW_VERSION=$(samloader check-update -m "SM-A528B" -r "BTU" | tail -n 1)
-            test -n "$FW_VERSION" || { echo "samloader-rs returned no firmware version"; exit 1; }
-            echo "Using firmware: $FW_VERSION"
+            test -n "$FW_VERSION" || { echo "samloader-rs returned no A52s firmware version"; exit 1; }
+            echo "Using A52s target firmware: $FW_VERSION"
             samloader download -m "SM-A528B" -r "BTU" -v "$FW_VERSION" -j "$THREADS" -d "$ODIN_DIR/SM-A528B_BTU" && break
             echo "Attempt $i failed, retrying with $THREADS threads..."
             [ "$THREADS" -gt 1 ] && THREADS=$(( THREADS / 2 ))
@@ -191,19 +242,19 @@ jobs:
           done
           ZIP_FILE=$(find "$ODIN_DIR/SM-A528B_BTU" -maxdepth 1 -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
-            echo "Download failed after 5 attempts"
+            echo "A52s target firmware download failed after 5 attempts"
             exit 1
           fi
           unzip -o "$ZIP_FILE" -d "$ODIN_DIR/SM-A528B_BTU" && rm -f "$ZIP_FILE"
           echo "$FW_VERSION" > "$ODIN_DIR/SM-A528B_BTU/.downloaded"
 
-      - name: Extract same firmware
+      - name: Extract A52s target firmware
         if: steps.cache-target-fw.outputs.cache-hit != 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
-          ./scripts/extract_fw.sh
+          ./scripts/extract_fw.sh --ignore-source
 
-      - name: Save same firmware extraction cache
+      - name: Save target firmware extraction cache
         if: steps.cache-target-fw.outputs.cache-hit != 'true'
         uses: actions/cache/save@v5
         with:
