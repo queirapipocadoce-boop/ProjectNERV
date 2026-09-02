@@ -1,6 +1,0 @@
-id=aod_lcd_compat
-name=AOD LCD Compat
-version=4.0
-versionCode=4
-author=cLangsdorff & Claude
-description=Three-component always-show AOD patch for LCD panels: (1) setDisplayState DOZE→MODE_NORMAL so LCD stays on during active AOD; (2) LightsService UnsupportedOperationException catch to prevent DozeService crash; (3) AODService_v80 DN.smali wandering range fix so AOD elements do not visibly slide on always-on LCD. Always-show only: all doze/tap-to-show standby changes removed. Supersedes aod_wander_compat.

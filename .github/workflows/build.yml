@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          submodules: 'recursive'
+          submodules: false
 
       - name: Free disk space (1/3)
         run: |
@@ -57,6 +57,29 @@ jobs:
           path: out/tools
           key: tools-${{ runner.os }}-${{ hashFiles('scripts/build_dependencies.sh') }}
 
+      - name: Prepare pinned external dependencies
+        if: steps.cache-tools.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p external
+          git clone --depth=1 https://github.com/salvogiangri/android-tools.git external/android-tools
+          git -C external/android-tools fetch --depth=1 origin f29ad35e966897599e8d28c65c29ffe184fd6d74
+          git -C external/android-tools checkout --detach f29ad35e966897599e8d28c65c29ffe184fd6d74
+          git clone --depth=1 https://github.com/iBotPeaches/Apktool.git external/apktool
+          git -C external/apktool fetch --depth=1 origin 3b487db20c568b8da122efb573a2b11f2aa8d790
+          git -C external/apktool checkout --detach 3b487db20c568b8da122efb573a2b11f2aa8d790
+          git clone --depth=1 https://github.com/sekaiacg/erofs-utils.git external/erofs-utils
+          git -C external/erofs-utils fetch --depth=1 origin 620bf019a3eb6a9a2d8fa807a3034e5cc2b38d8a
+          git -C external/erofs-utils checkout --detach 620bf019a3eb6a9a2d8fa807a3034e5cc2b38d8a
+          git clone --depth=1 https://github.com/salvogiangri/img2sdat.git external/img2sdat
+          git -C external/img2sdat fetch --depth=1 origin 601317ed0bf502eb8facdd048f2d75dc75ffcd53
+          git -C external/img2sdat checkout --detach 601317ed0bf502eb8facdd048f2d75dc75ffcd53
+          git clone --depth=1 https://github.com/ananjaser1211/samloader.git external/samloader
+          git -C external/samloader fetch --depth=1 origin e174ea8a10a4fd80f7675337703cbb1ec8ef9b2d
+          git -C external/samloader checkout --detach e174ea8a10a4fd80f7675337703cbb1ec8ef9b2d
+          git clone --depth=1 https://github.com/salvogiangri/signapk.git external/signapk
+          git -C external/signapk fetch --depth=1 origin 1c8c480c16aa2f05844c26bcd8d34d4f823d887a
+          git -C external/signapk checkout --detach 1c8c480c16aa2f05844c26bcd8d34d4f823d887a
+
       - name: Build samloader-rs (with version selection patch)
         if: steps.cache-samloader.outputs.cache-hit != 'true'
         run: |
@@ -70,7 +93,7 @@ jobs:
       - name: Build dependencies
         if: steps.cache-tools.outputs.cache-hit != 'true'
         run: |
-          source ./buildenv.sh a14
+          source ./buildenv.sh a52sxq
           ./scripts/build_dependencies.sh
 
       - name: Cache samloader-rs binary
@@ -93,7 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [a14]
+        target: [a52sxq]
 
     steps:
       - name: Checkout repo
@@ -106,10 +129,28 @@ jobs:
           path: out/tools
           key: tools-${{ runner.os }}-${{ hashFiles('scripts/build_dependencies.sh') }}
 
-      - name: Fetch submodules (if tools not cached)
+      - name: Prepare pinned external dependencies
         if: steps.cache-tools.outputs.cache-hit != 'true'
         run: |
-          git submodule update --init --recursive
+          mkdir -p external
+          git clone --depth=1 https://github.com/salvogiangri/android-tools.git external/android-tools
+          git -C external/android-tools fetch --depth=1 origin f29ad35e966897599e8d28c65c29ffe184fd6d74
+          git -C external/android-tools checkout --detach f29ad35e966897599e8d28c65c29ffe184fd6d74
+          git clone --depth=1 https://github.com/iBotPeaches/Apktool.git external/apktool
+          git -C external/apktool fetch --depth=1 origin 3b487db20c568b8da122efb573a2b11f2aa8d790
+          git -C external/apktool checkout --detach 3b487db20c568b8da122efb573a2b11f2aa8d790
+          git clone --depth=1 https://github.com/sekaiacg/erofs-utils.git external/erofs-utils
+          git -C external/erofs-utils fetch --depth=1 origin 620bf019a3eb6a9a2d8fa807a3034e5cc2b38d8a
+          git -C external/erofs-utils checkout --detach 620bf019a3eb6a9a2d8fa807a3034e5cc2b38d8a
+          git clone --depth=1 https://github.com/salvogiangri/img2sdat.git external/img2sdat
+          git -C external/img2sdat fetch --depth=1 origin 601317ed0bf502eb8facdd048f2d75dc75ffcd53
+          git -C external/img2sdat checkout --detach 601317ed0bf502eb8facdd048f2d75dc75ffcd53
+          git clone --depth=1 https://github.com/ananjaser1211/samloader.git external/samloader
+          git -C external/samloader fetch --depth=1 origin e174ea8a10a4fd80f7675337703cbb1ec8ef9b2d
+          git -C external/samloader checkout --detach e174ea8a10a4fd80f7675337703cbb1ec8ef9b2d
+          git clone --depth=1 https://github.com/salvogiangri/signapk.git external/signapk
+          git -C external/signapk fetch --depth=1 origin 1c8c480c16aa2f05844c26bcd8d34d4f823d887a
+          git -C external/signapk checkout --detach 1c8c480c16aa2f05844c26bcd8d34d4f823d887a
 
       - name: Free disk space (1/3)
         run: |
@@ -167,36 +208,36 @@ jobs:
         id: cache-source-fw
         uses: actions/cache/restore@v5
         with:
-          path: out/fw/SM-S711B_EUX
-          key: source-fw-${{ matrix.target }}-S711BXXSAEYH1
+          path: out/fw/SM-S911B_EUX
+          key: source-fw-${{ matrix.target }}-SM-S911B-EUX-352404911234563
 
       - name: Restore source firmware download marker
         if: steps.cache-source-fw.outputs.cache-hit == 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
-          mkdir -p "$ODIN_DIR/SM-S711B_EUX"
-          echo "S711BXXSAEYH1/S711BOXMAEYH1/S711BXXSAEYH1" > "$ODIN_DIR/SM-S711B_EUX/.downloaded"
+          mkdir -p "$ODIN_DIR/SM-S911B_EUX"
+          echo "352404911234563" > "$ODIN_DIR/SM-S911B_EUX/.downloaded"
 
       - name: Download source firmware
         if: steps.cache-source-fw.outputs.cache-hit != 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
-          mkdir -p "$ODIN_DIR/SM-S711B_EUX"
+          mkdir -p "$ODIN_DIR/SM-S911B_EUX"
           THREADS=8
           for i in 1 2 3 4 5; do
-            rm -rf "$ODIN_DIR/SM-S711B_EUX" && mkdir -p "$ODIN_DIR/SM-S711B_EUX"
-            samloader download -m "SM-S711B" -r "EUX" -v "S711BXXSAEYH1/S711BOXMAEYH1/S711BXXSAEYH1" -j "$THREADS" -d "$ODIN_DIR/SM-S711B_EUX" && break
+            rm -rf "$ODIN_DIR/SM-S911B_EUX" && mkdir -p "$ODIN_DIR/SM-S911B_EUX"
+            samloader download -m "SM-S911B" -r "EUX" -v "352404911234563" -j "$THREADS" -d "$ODIN_DIR/SM-S911B_EUX" && break
             echo "Attempt $i failed, retrying with $THREADS threads..."
             [ "$THREADS" -gt 1 ] && THREADS=$(( THREADS / 2 ))
             sleep 10
           done
-          ZIP_FILE=$(find "$ODIN_DIR/SM-S711B_EUX" -maxdepth 1 -name "*.zip" | head -n 1)
+          ZIP_FILE=$(find "$ODIN_DIR/SM-S911B_EUX" -maxdepth 1 -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
             echo "Download failed after 5 attempts"
             exit 1
           fi
-          unzip -o "$ZIP_FILE" -d "$ODIN_DIR/SM-S711B_EUX" && rm -f "$ZIP_FILE"
-          echo "S711BXXSAEYH1/S711BOXMAEYH1/S711BXXSAEYH1" > "$ODIN_DIR/SM-S711B_EUX/.downloaded"
+          unzip -o "$ZIP_FILE" -d "$ODIN_DIR/SM-S911B_EUX" && rm -f "$ZIP_FILE"
+          echo "352404911234563" > "$ODIN_DIR/SM-S911B_EUX/.downloaded"
 
       - name: Extract source firmware
         if: steps.cache-source-fw.outputs.cache-hit != 'true'
@@ -208,43 +249,43 @@ jobs:
         if: steps.cache-source-fw.outputs.cache-hit != 'true'
         uses: actions/cache/save@v5
         with:
-          path: out/fw/SM-S711B_EUX
-          key: source-fw-${{ matrix.target }}-S711BXXSAEYH1
+          path: out/fw/SM-S911B_EUX
+          key: source-fw-${{ matrix.target }}-SM-S911B-EUX-352404911234563
 
       - name: Restore target firmware extraction cache
         id: cache-target-fw
         uses: actions/cache/restore@v5
         with:
-          path: out/fw/SM-A145F_TUR
-          key: target-fw-${{ matrix.target }}-A145FXXUBDYJ5
+          path: out/fw/SM-A528B_BTU
+          key: target-fw-${{ matrix.target }}-SM-A528B-BTU-352599501234566
 
       - name: Restore target firmware download marker
         if: steps.cache-target-fw.outputs.cache-hit == 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
-          mkdir -p "$ODIN_DIR/SM-A145F_TUR"
-          echo "A145FXXUBDYJ5/A145FOJMBDYJ5/A145FXXUBDYJ5" > "$ODIN_DIR/SM-A145F_TUR/.downloaded"
+          mkdir -p "$ODIN_DIR/SM-A528B_BTU"
+          echo "352599501234566" > "$ODIN_DIR/SM-A528B_BTU/.downloaded"
 
-      - name: Download a14 firmware
+      - name: Download A52s firmware
         if: steps.cache-target-fw.outputs.cache-hit != 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
-          mkdir -p "$ODIN_DIR/SM-A145F_TUR"
+          mkdir -p "$ODIN_DIR/SM-A528B_BTU"
           THREADS=8
           for i in 1 2 3 4 5; do
-            rm -rf "$ODIN_DIR/SM-A145F_TUR" && mkdir -p "$ODIN_DIR/SM-A145F_TUR"
-            samloader download -m "SM-A145F" -r "TUR" -v "A145FXXUBDYJ5/A145FOJMBDYJ5/A145FXXUBDYJ5" -j "$THREADS" -d "$ODIN_DIR/SM-A145F_TUR" && break
+            rm -rf "$ODIN_DIR/SM-A528B_BTU" && mkdir -p "$ODIN_DIR/SM-A528B_BTU"
+            samloader download -m "SM-A528B" -r "BTU" -v "352599501234566" -j "$THREADS" -d "$ODIN_DIR/SM-A528B_BTU" && break
             echo "Attempt $i failed, retrying with $THREADS threads..."
             [ "$THREADS" -gt 1 ] && THREADS=$(( THREADS / 2 ))
             sleep 10
           done
-          ZIP_FILE=$(find "$ODIN_DIR/SM-A145F_TUR" -maxdepth 1 -name "*.zip" | head -n 1)
+          ZIP_FILE=$(find "$ODIN_DIR/SM-A528B_BTU" -maxdepth 1 -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
             echo "Download failed after 5 attempts"
             exit 1
           fi
-          unzip -o "$ZIP_FILE" -d "$ODIN_DIR/SM-A145F_TUR" && rm -f "$ZIP_FILE"
-          echo "A145FXXUBDYJ5/A145FOJMBDYJ5/A145FXXUBDYJ5" > "$ODIN_DIR/SM-A145F_TUR/.downloaded"
+          unzip -o "$ZIP_FILE" -d "$ODIN_DIR/SM-A528B_BTU" && rm -f "$ZIP_FILE"
+          echo "352599501234566" > "$ODIN_DIR/SM-A528B_BTU/.downloaded"
 
       - name: Extract target firmware
         if: steps.cache-target-fw.outputs.cache-hit != 'true'
@@ -256,8 +297,8 @@ jobs:
         if: steps.cache-target-fw.outputs.cache-hit != 'true'
         uses: actions/cache/save@v5
         with:
-          path: out/fw/SM-A145F_TUR
-          key: target-fw-${{ matrix.target }}-A145FXXUBDYJ5
+          path: out/fw/SM-A528B_BTU
+          key: target-fw-${{ matrix.target }}-SM-A528B-BTU-352599501234566
 
       - name: Build ROM
         run: |

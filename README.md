@@ -29,7 +29,7 @@ Any form of contribution, suggestions, bug report or feature request for the pro
 NERV is a fork of UN1CA; to make the build system work with One UI 7, we are aiming for an UN1CA-like experience with what we can do. All changes have been made under GPLv3, if you see any problems about credits at repo, please kindly report to me at Telegram, XDA or email. 
 
 # What is goal of this fork?
-This forks goal is making ProjectNerv work on Galaxy A14, everything else is based on original ProjectNERV repo.
+This fork is maintained as an A52s-only build tree; the remote build is provided by GitHub Actions.
 
 # Features
 - Galaxy AI support
@@ -51,14 +51,14 @@ This forks goal is making ProjectNerv work on Galaxy A14, everything else is bas
 - Camera privacy toggle support
 - Debloated from useless system services/additional apps
 - KnoxPatch (https://github.com/salvogiangri/KnoxPatch) implemented in system frameworks
-- Based on S711BXXSAEYI1 version
+- Based on SM-S911B/EUX/352404911234563 → SM-A528B/BTU/352599501234566 version
 # Bugs
 - Nothing.
-- Report any other in @a14stuffschat
+- Report any other in the repository issue tracker
 # Notes
 - Keyboard & UI can be laggy sometimes
 - Use another keyboard app if you are writing fast in keyboard
-- ROM is more useable than a14revive@3.2, according to user responds i will release it on XDA too. Give feedbacks about yours experience in ROM
+- ROM is more useable than the previous A14 port, according to user responds i will release it on XDA too. Give feedbacks about yours experience in ROM
 
 # Licensing
 This project is licensed under the terms of the [GNU General Public License v3.0](LICENSE). External dependencies might be distributed under a different license, such as:
@@ -78,7 +78,7 @@ This project is licensed under the terms of the [GNU General Public License v3.0
 - **[saadelasfur](https://github.com/saadelasfur)** for his SmartManagerCN recovery flashable zip repo
 - **[A21s ExtremeROM repo](https://github.com/BasGame1/ExtremeROM_A21s)**
 - PM me on [Telegram](https://t.me/miss_yutani) if i forgot anything
-- This fork doesnt have any big difference from the original ProjectNERV repo, this fork's goal is building it for Galaxy A14
+- This fork is maintained as an A52s-only build tree.
 
 # ProjectNERV Credits
 A big thanks goes to the following for their invaluable contributions in no particular order:
