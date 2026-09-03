@@ -270,8 +270,14 @@ jobs:
         if: steps.cache-a05-donor.outputs.cache-hit != 'true'
         run: |
           source ./buildenv.sh ${{ matrix.target }}
+          DONOR_FIRMWARE="SM-A057F/INS/356480620213714"
+          ./scripts/download_fw.sh --ignore-target --ignore-source "$DONOR_FIRMWARE"
+          ./scripts/extract_fw.sh --ignore-target --ignore-source "$DONOR_FIRMWARE"
+          DONOR_DIR="$FW_DIR/SM-A057F_INS"
+          test -d "$DONOR_DIR/system/system"
+          rm -rf prebuilts/samsung/a05snsdxx
           mkdir -p prebuilts/samsung/a05snsdxx
-          ./scripts/internal/update_prebuilt_blobs.sh prebuilts/samsung/a05snsdxx
+          cp -a "$DONOR_DIR/system/system" prebuilts/samsung/a05snsdxx/system
 
       - name: Save A05 donor prebuilt cache
         if: steps.cache-a05-donor.outputs.cache-hit != 'true'
