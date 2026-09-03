@@ -259,6 +259,27 @@ jobs:
           path: out/fw/SM-A528B_BTU
           key: target-fw-${{ matrix.target }}-${{ hashFiles('target/a52sxq/config.sh') }}
 
+      - name: Restore A05 donor prebuilt cache
+        id: cache-a05-donor
+        uses: actions/cache/restore@v5
+        with:
+          path: prebuilts/samsung/a05snsdxx
+          key: a05-donor-${{ runner.os }}-${{ hashFiles('scripts/internal/update_prebuilt_blobs.sh', 'scripts/download_fw.sh', 'scripts/extract_fw.sh') }}
+
+      - name: Prepare A05 donor prebuilt
+        if: steps.cache-a05-donor.outputs.cache-hit != 'true'
+        run: |
+          source ./buildenv.sh ${{ matrix.target }}
+          mkdir -p prebuilts/samsung/a05snsdxx
+          ./scripts/internal/update_prebuilt_blobs.sh prebuilts/samsung/a05snsdxx
+
+      - name: Save A05 donor prebuilt cache
+        if: steps.cache-a05-donor.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: prebuilts/samsung/a05snsdxx
+          key: a05-donor-${{ runner.os }}-${{ hashFiles('scripts/internal/update_prebuilt_blobs.sh', 'scripts/download_fw.sh', 'scripts/extract_fw.sh') }}
+
       - name: Build ROM
         run: |
           source ./buildenv.sh ${{ matrix.target }}
