@@ -40,7 +40,7 @@ if [[ "$SOURCE_PRODUCT_FIRST_API_LEVEL" != "$TARGET_PRODUCT_FIRST_API_LEVEL" ]];
                 "$APKTOOL_DIR/$f"
             sed -i "s/\"$SOURCE_PRODUCT_FIRST_API_LEVEL\"/\"$TARGET_PRODUCT_FIRST_API_LEVEL\"/g" "$APKTOOL_DIR/$f"
         else
-            LOG_WARN "Mainline API class not present, skipping: $f"
+            LOG "Mainline API class not present, skipping: $f"
         fi
     done
     LOG_STEP_OUT
@@ -102,7 +102,7 @@ if [[ "$SOURCE_AUTO_BRIGHTNESS_TYPE" != "$TARGET_AUTO_BRIGHTNESS_TYPE" ]]; then
         if [[ -f "$APKTOOL_DIR/$f" ]]; then
             sed -i "s/\"$SOURCE_AUTO_BRIGHTNESS_TYPE\"/\"$TARGET_AUTO_BRIGHTNESS_TYPE\"/g" "$APKTOOL_DIR/$f"
         else
-            LOG_WARN "Auto brightness class not present, skipping: $f"
+            LOG "Auto brightness class not present, skipping: $f"
         fi
     done
     LOG_STEP_OUT
