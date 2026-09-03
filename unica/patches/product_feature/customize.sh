@@ -131,9 +131,9 @@ if [[ "$(GET_FP_SENSOR_TYPE "$SOURCE_FP_SENSOR_CONFIG")" != "$(GET_FP_SENSOR_TYP
     grep -lr "$SOURCE_FP_SENSOR_CONFIG" "$APKTOOL_DIR/system/framework/framework.jar/" | xargs -r -n 1 sed -i "s/$SOURCE_FP_SENSOR_CONFIG/$TARGET_FP_SENSOR_CONFIG/g"
 
     if [[ "$(GET_FP_SENSOR_TYPE "$TARGET_FP_SENSOR_CONFIG")" == "optical" ]]; then
-        ADD_TO_WORK_DIR "a36xqnaxx" "system" "system/bin/surfaceflinger"
-        ADD_TO_WORK_DIR "a36xqnaxx" "system" "system/lib64/libgui.so"
-        ADD_TO_WORK_DIR "a36xqnaxx" "system" "system/lib64/libui.so"
+        # A52s (a52sxq) must not import A34/A36 prebuilts. These surfaceflinger/libgui/libui
+        # binaries belong to a different device and can cause framework or boot incompatibility.
+        # The A52s build keeps its own binaries and applies only the compatible fingerprint APK patches.
         DECODE_APK "system" "system/priv-app/BiometricSetting/BiometricSetting.apk"
         APPLY_PATCH "system" "system/framework/services.jar" "$SRC_DIR/unica/patches/product_feature/fingerprint/services.jar/0001-Set-FP_FEATURE_SENSOR_IS_ULTRASONIC-to-false.patch"
         APPLY_PATCH "system" "system/priv-app/BiometricSetting/BiometricSetting.apk" "$SRC_DIR/unica/patches/product_feature/fingerprint/BiometricSetting.apk/0001-Set-FP_FEATURE_SENSOR_IS_ULTRASONIC-to-false.patch"
