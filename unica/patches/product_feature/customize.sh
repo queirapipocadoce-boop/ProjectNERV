@@ -121,7 +121,11 @@ if [[ "$(GET_FP_SENSOR_TYPE "$SOURCE_FP_SENSOR_CONFIG")" != "$(GET_FP_SENSOR_TYP
     system/priv-app/SecSettings/SecSettings.apk/smali_classes4/com/samsung/android/settings/biometrics/fingerprint/FingerprintSettingsUtils.smali
     "
     for f in $FTP; do
-        sed -i "s/$SOURCE_FP_SENSOR_CONFIG/$TARGET_FP_SENSOR_CONFIG/g" "$APKTOOL_DIR/$f"
+        if [[ -f "$APKTOOL_DIR/$f" ]]; then
+            sed -i "s/$SOURCE_FP_SENSOR_CONFIG/$TARGET_FP_SENSOR_CONFIG/g" "$APKTOOL_DIR/$f"
+        else
+            LOG "Fingerprint configuration class not present, skipping: $f"
+        fi
     done
 
     grep -lr "$SOURCE_FP_SENSOR_CONFIG" "$APKTOOL_DIR/system/framework/framework.jar/" | xargs -r -n 1 sed -i "s/$SOURCE_FP_SENSOR_CONFIG/$TARGET_FP_SENSOR_CONFIG/g"
