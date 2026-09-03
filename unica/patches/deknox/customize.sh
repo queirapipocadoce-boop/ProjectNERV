@@ -1,7 +1,7 @@
 SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_FRAMEWORK_SUPPORT_BLOCKCHAIN_SERVICE" --delete
 
 if [ "$TARGET_SINGLE_SYSTEM_IMAGE" == "qssi" ]; then
-    ADD_TO_WORK_DIR "a05snsdxx" "system" "."
+    :
 elif [ "$TARGET_SINGLE_SYSTEM_IMAGE" == "essi" ]; then
     ADD_TO_WORK_DIR "gts9fexx" "system" "system/bin" 0 2000 751 "u:object_r:system_file:s0"
     ADD_TO_WORK_DIR "gts9fexx" "system" "system/lib/libandroid_servers.so" 0 0 644 "u:object_r:system_lib_file:s0"More actions

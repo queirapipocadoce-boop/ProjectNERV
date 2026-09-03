@@ -259,33 +259,6 @@ jobs:
           path: out/fw/SM-A528B_BTU
           key: target-fw-${{ matrix.target }}-${{ hashFiles('target/a52sxq/config.sh') }}
 
-      - name: Restore A05 donor prebuilt cache
-        id: cache-a05-donor
-        uses: actions/cache/restore@v5
-        with:
-          path: prebuilts/samsung/a05snsdxx
-          key: a05-donor-${{ runner.os }}-${{ hashFiles('scripts/internal/update_prebuilt_blobs.sh', 'scripts/download_fw.sh', 'scripts/extract_fw.sh') }}
-
-      - name: Prepare A05 donor prebuilt
-        if: steps.cache-a05-donor.outputs.cache-hit != 'true'
-        run: |
-          source ./buildenv.sh ${{ matrix.target }}
-          DONOR_FIRMWARE="SM-A057F/INS/356480620213714"
-          ./scripts/download_fw.sh --ignore-target --ignore-source "$DONOR_FIRMWARE"
-          ./scripts/extract_fw.sh --ignore-target --ignore-source "$DONOR_FIRMWARE"
-          DONOR_DIR="$FW_DIR/SM-A057F_INS"
-          test -d "$DONOR_DIR/system/system"
-          rm -rf prebuilts/samsung/a05snsdxx
-          mkdir -p prebuilts/samsung/a05snsdxx
-          cp -a "$DONOR_DIR/system/system" prebuilts/samsung/a05snsdxx/system
-
-      - name: Save A05 donor prebuilt cache
-        if: steps.cache-a05-donor.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: prebuilts/samsung/a05snsdxx
-          key: a05-donor-${{ runner.os }}-${{ hashFiles('scripts/internal/update_prebuilt_blobs.sh', 'scripts/download_fw.sh', 'scripts/extract_fw.sh') }}
-
       - name: Build ROM
         run: |
           source ./buildenv.sh ${{ matrix.target }}
