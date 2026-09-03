@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'fifteen'
+      - 'main'
 
 jobs:
   warmup-cache:
@@ -181,9 +181,8 @@ jobs:
           THREADS=8
           for i in 1 2 3 4 5; do
             rm -rf "$ODIN_DIR/SM-S911B_EUX" && mkdir -p "$ODIN_DIR/SM-S911B_EUX"
-            FW_VERSION=$(samloader check-update -m "SM-S911B" -r "EUX" | tail -n 1)
-            test -n "$FW_VERSION" || { echo "samloader-rs returned no S23 firmware version"; exit 1; }
-            echo "Using S23 source firmware: $FW_VERSION"
+            FW_VERSION="S911BXXSAFZH3/S911BOXMAFZH3/S911BXXSAFZE1/S911BXXSAFZH3"
+            echo "Using pinned S23 One UI 7 source firmware: $FW_VERSION"
             samloader download -m "SM-S911B" -r "EUX" -v "$FW_VERSION" -j "$THREADS" -d "$ODIN_DIR/SM-S911B_EUX" && break
             echo "Attempt $i failed, retrying with $THREADS threads..."
             [ "$THREADS" -gt 1 ] && THREADS=$(( THREADS / 2 ))
@@ -232,9 +231,8 @@ jobs:
           THREADS=8
           for i in 1 2 3 4 5; do
             rm -rf "$ODIN_DIR/SM-A528B_BTU" && mkdir -p "$ODIN_DIR/SM-A528B_BTU"
-            FW_VERSION=$(samloader check-update -m "SM-A528B" -r "BTU" | tail -n 1)
-            test -n "$FW_VERSION" || { echo "samloader-rs returned no A52s firmware version"; exit 1; }
-            echo "Using A52s target firmware: $FW_VERSION"
+            FW_VERSION="A528BXXSBGYI3/A528BOXMBGYI3/A528BXXSBGYI3/A528BXXSBGYI3"
+            echo "Using pinned A52s target firmware: $FW_VERSION"
             samloader download -m "SM-A528B" -r "BTU" -v "$FW_VERSION" -j "$THREADS" -d "$ODIN_DIR/SM-A528B_BTU" && break
             echo "Attempt $i failed, retrying with $THREADS threads..."
             [ "$THREADS" -gt 1 ] && THREADS=$(( THREADS / 2 ))
