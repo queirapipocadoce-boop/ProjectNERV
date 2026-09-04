@@ -416,7 +416,13 @@ if $SOURCE_IS_ESIM_SUPPORTED; then
     fi
 fi
 
-if [[ "$TARGET_CODENAME" == "a52sxq" ]] || [[ "$TARGET_CODENAME" == "a73xq" ]] || [[ "$TARGET_CODENAME" == "m52xq" ]]; then
+if [[ "$TARGET_CODENAME" == "a52sxq" ]]; then
+    # The S23 One UI 7 SamsungDeviceHealthManagerService.apk does not contain
+    # smali/S1/P.smali expected by this legacy SSRM warning-dialog patch.
+    # Skip this UI-only warning modification for A52s and keep the stock APK;
+    # it does not alter boot, kernel, vendor, ramdisk, or sepolicy components.
+    LOG "Skipping legacy SSRM warning-dialog patch for A52s: target class is absent"
+elif [[ "$TARGET_CODENAME" == "a73xq" ]] || [[ "$TARGET_CODENAME" == "m52xq" ]]; then
     APPLY_PATCH "system" "system/priv-app/SamsungDeviceHealthManagerService/SamsungDeviceHealthManagerService.apk" \
         "$SRC_DIR/unica/patches/product_feature/ssrm/SamsungDeviceHealthManagerService.apk/0001-Nuke-SSRM-Warning-dialog.patch"
 fi
