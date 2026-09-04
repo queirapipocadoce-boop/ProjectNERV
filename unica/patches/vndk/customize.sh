@@ -6,7 +6,10 @@ fi
 ADD_TARGET_VNDK_APEX() {
     case "$TARGET_VENDOR_API_LEVEL" in
         "30")
-            ADD_TO_WORK_DIR "a73xqxx" "system_ext" "apex/com.android.vndk.v30.apex" 0 0 644 "u:object_r:system_file:s0"
+            # Use the target A52s firmware VNDK instead of the unrelated A73 prebuilt.
+            # TARGET_FIRMWARE is MODEL/CSC/serial; ADD_TO_WORK_DIR resolves MODEL/CSC
+            # under out/fw and keeps this boot-sensitive blob device-correct.
+            ADD_TO_WORK_DIR "${TARGET_FIRMWARE%/*}" "system_ext" "apex/com.android.vndk.v30.apex" 0 0 644 "u:object_r:system_file:s0"
             ;;
         "31")
             ADD_TO_WORK_DIR "r0sxxx" "system_ext" "apex/com.android.vndk.v31.apex" 0 0 644 "u:object_r:system_file:s0"
