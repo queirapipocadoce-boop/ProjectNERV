@@ -427,7 +427,13 @@ elif [[ "$TARGET_CODENAME" == "a73xq" ]] || [[ "$TARGET_CODENAME" == "m52xq" ]];
         "$SRC_DIR/unica/patches/product_feature/ssrm/SamsungDeviceHealthManagerService.apk/0001-Nuke-SSRM-Warning-dialog.patch"
 fi
 
-if [ ! -f "$FW_DIR/${MODEL}_${REGION}/vendor/etc/permissions/android.hardware.strongbox_keystore.xml" ]; then
+if [[ "$TARGET_CODENAME" == "a52sxq" ]]; then
+    # The S23 One UI 7 framework.jar does not contain DevRootKeyATCmd.smali,
+    # so the legacy StrongBox patch cannot apply to the A52s source framework.
+    # Keep framework.jar stock: this optional security-feature skip does not alter
+    # boot, kernel, vendor, ramdisk, or sepolicy components.
+    LOG "Skipping legacy StrongBox patch for A52s: target class is absent"
+elif [ ! -f "$FW_DIR/${MODEL}_${REGION}/vendor/etc/permissions/android.hardware.strongbox_keystore.xml" ]; then
     LOG_STEP_IN "- Applying strongbox patches"
     APPLY_PATCH "system" "system/framework/framework.jar" "$SRC_DIR/unica/patches/product_feature/strongbox/framework.jar/0001-Disable-StrongBox-in-DevRootKeyATCmd.patch"
     LOG_STEP_OUT
