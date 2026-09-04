@@ -368,7 +368,14 @@ if [[ "$SOURCE_MULTI_MIC_MANAGER_VERSION" != "$TARGET_MULTI_MIC_MANAGER_VERSION"
     system/framework/framework.jar/smali_classes5/com/samsung/android/camera/mic/SemMultiMicManager.smali
     "
     for f in $FTP; do
-        sed -i "s/$SOURCE_MULTI_MIC_MANAGER_VERSION/$TARGET_MULTI_MIC_MANAGER_VERSION/g" "$APKTOOL_DIR/$f"
+        if [[ -f "$APKTOOL_DIR/$f" ]]; then
+            sed -i "s/$SOURCE_MULTI_MIC_MANAGER_VERSION/$TARGET_MULTI_MIC_MANAGER_VERSION/g" "$APKTOOL_DIR/$f"
+        else
+            # This optional MultiMic class is absent from the S23 One UI 7 framework;
+            # keep the stock implementation instead of injecting a foreign device class.
+            # This affects an optional audio feature only, not boot, kernel, vendor, or sepolicy.
+            LOG "MultiMicManager class not present, skipping: $f"
+        fi
     done
     LOG_STEP_OUT
 fi
