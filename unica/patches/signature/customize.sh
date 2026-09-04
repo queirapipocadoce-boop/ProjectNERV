@@ -2,13 +2,12 @@ if [ "$TARGET_SINGLE_SYSTEM_IMAGE" == "self" ]; then
     return 0
 fi
 
-if [[ "$TARGET_CODENAME" == "a52sxq" ]] || [[ "$TARGET_FIRMWARE" == SM-A528B/* ]]; then
-    # The S23 One UI 7 services.jar uses a different Package Manager layout;
-    # the legacy signature-spoof patch expects absent smali_classes2 classes.
-    # Keep services.jar stock on A52s because Package Manager is boot-critical.
-    LOG "Skipping legacy platform-signature spoof for A52s (SM-A528B): incompatible services.jar layout"
-    return 0
-fi
+# This repository is A52s-only. The S23 One UI 7 services.jar uses a different
+# Package Manager layout, and the legacy signature-spoof patch expects absent
+# smali_classes2 classes. Keep services.jar stock because Package Manager is
+# boot-critical; the optional signature-spoof feature is intentionally disabled.
+LOG "Skipping legacy platform-signature spoof: A52s-only build keeps Package Manager stock"
+return 0
 
 CERT_PREFIX="aosp_platform"
 $ROM_IS_OFFICIAL && CERT_PREFIX="platform"
