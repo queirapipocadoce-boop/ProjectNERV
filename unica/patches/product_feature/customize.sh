@@ -174,8 +174,15 @@ if [[ "$(GET_FP_SENSOR_TYPE "$TARGET_FP_SENSOR_CONFIG")" == "optical" ]]; then
     system/priv-app/BiometricSetting/BiometricSetting.apk/smali/com/samsung/android/biometrics/app/setting/fingerprint/vi/VisualEffectContainer.smali
     "
     for f in $FTP; do
-        sed -i "s/green_circle/ripple/g" "$APKTOOL_DIR/$f"
-        sed -i "s/white_circle/ripple/g" "$APKTOOL_DIR/$f"
+        if [[ -f "$APKTOOL_DIR/$f" ]]; then
+            sed -i "s/green_circle/ripple/g" "$APKTOOL_DIR/$f"
+            sed -i "s/white_circle/ripple/g" "$APKTOOL_DIR/$f"
+        else
+            # This optional FOD animation class is absent from the S23 One UI 7
+            # SecSettings.apk; skip it for A52s instead of importing foreign code.
+            # Skipping this UI-only tweak does not modify boot, kernel, vendor, or sepolicy.
+            LOG "FOD animation class not present, skipping: $f"
+        fi
     done
 fi
 
@@ -278,7 +285,13 @@ if [[ "$SOURCE_HFR_MODE" != "$TARGET_HFR_MODE" ]]; then
     system_ext/priv-app/SystemUI/SystemUI.apk/smali/com/android/systemui/LsRune.smali
     "
     for f in $FTP; do
-        sed -i "s/\"$SOURCE_HFR_MODE\"/\"$TARGET_HFR_MODE\"/g" "$APKTOOL_DIR/$f"
+        if [[ -f "$APKTOOL_DIR/$f" ]]; then
+            sed -i "s/\"$SOURCE_HFR_MODE\"/\"$TARGET_HFR_MODE\"/g" "$APKTOOL_DIR/$f"
+        else
+            # SecDisplayUtils is not present in the S23 One UI 7 SecSettings.apk;
+            # skip this optional UI conversion and keep the target-safe implementation.
+            LOG "HFR mode class not present, skipping: $f"
+        fi
     done
     LOG_STEP_OUT
 fi
@@ -293,10 +306,14 @@ if [[ "$SOURCE_HFR_SUPPORTED_REFRESH_RATE" != "$TARGET_HFR_SUPPORTED_REFRESH_RAT
     system/priv-app/SecSettings/SecSettings.apk/smali_classes4/com/samsung/android/settings/display/SecDisplayUtils.smali
     "
     for f in $FTP; do
-        if [[ "$TARGET_HFR_SUPPORTED_REFRESH_RATE" != "none" ]]; then
-            sed -i "s/\"$SOURCE_HFR_SUPPORTED_REFRESH_RATE\"/\"$TARGET_HFR_SUPPORTED_REFRESH_RATE\"/g" "$APKTOOL_DIR/$f"
+        if [[ -f "$APKTOOL_DIR/$f" ]]; then
+            if [[ "$TARGET_HFR_SUPPORTED_REFRESH_RATE" != "none" ]]; then
+                sed -i "s/\"$SOURCE_HFR_SUPPORTED_REFRESH_RATE\"/\"$TARGET_HFR_SUPPORTED_REFRESH_RATE\"/g" "$APKTOOL_DIR/$f"
+            else
+                sed -i "s/\"$SOURCE_HFR_SUPPORTED_REFRESH_RATE\"/\"\"/g" "$APKTOOL_DIR/$f"
+            fi
         else
-            sed -i "s/\"$SOURCE_HFR_SUPPORTED_REFRESH_RATE\"/\"\"/g" "$APKTOOL_DIR/$f"
+            LOG "HFR supported refresh-rate class not present, skipping: $f"
         fi
     done
     LOG_STEP_OUT
@@ -314,7 +331,11 @@ if [[ "$SOURCE_HFR_DEFAULT_REFRESH_RATE" != "$TARGET_HFR_DEFAULT_REFRESH_RATE" ]
     system/priv-app/SettingsProvider/SettingsProvider.apk/smali/com/android/providers/settings/DatabaseHelper.smali
     "
     for f in $FTP; do
-        sed -i "s/\"$SOURCE_HFR_DEFAULT_REFRESH_RATE\"/\"$TARGET_HFR_DEFAULT_REFRESH_RATE\"/g" "$APKTOOL_DIR/$f"
+        if [[ -f "$APKTOOL_DIR/$f" ]]; then
+            sed -i "s/\"$SOURCE_HFR_DEFAULT_REFRESH_RATE\"/\"$TARGET_HFR_DEFAULT_REFRESH_RATE\"/g" "$APKTOOL_DIR/$f"
+        else
+            LOG "HFR default refresh-rate class not present, skipping: $f"
+        fi
     done
     LOG_STEP_OUT
 fi
